@@ -184,7 +184,15 @@ for table_name in table_queries_iterator:
             # Retrieve the seller_id from the offer
             offer_seller_query = sql.SQL("SELECT seller_id FROM flea_mktv.offer WHERE offer_id = %s;")
             cursor.execute(offer_seller_query, (offer_id,))
-            seller_id = cursor.fetchone()[0]
+            seller_row = cursor.fetchone()
+
+            if seller_row is not None:
+                seller_id = seller_row[0]
+                # Rest of your code for generating transaction data
+            else:
+                # Handle the case when seller_id is not found
+                # This could be a situation where the offer_id doesn't exist or the corresponding offer doesn't have a seller_id
+                print("Error: Seller ID not found for offer ID:", offer_id)
 
             # Generate a buyer_id that is not the same as the seller_id
             buyer_ids = list(range(1, num_insertions + 1))
