@@ -4,7 +4,7 @@ from psycopg2 import sql
 from datetime import datetime
 import time
 
-def insertarEnTabla(tableName):
+def insertarEnTabla(tableName,num_insertions):
     # Generate and execute the SQL insert statements for the "player," "item," "transaction," and "offer" tables
     table_queries = {
     'category': "INSERT INTO flea_mktv.category (category_name, description) VALUES (%s, %s);",
@@ -15,9 +15,6 @@ def insertarEnTabla(tableName):
     'offer': "INSERT INTO flea_mktv.offer (seller_id, tax_id, offer_status, product_id, quantity) VALUES (%s, %s, %s, %s, %s);",
     'transaction': """INSERT INTO flea_mktv."transaction" (buyer_id, offer_id, quantity, "time") VALUES (%s, %s, %s, %s);"""
     }
-
-
-    used_item_ids = []  # List to keep track of used item_ids
     start_time = time.time()  # Start time
     insertion_count = 0
     table_queries_iterator = iter(table_queries)
@@ -166,7 +163,7 @@ def insertarEnTabla(tableName):
                 transacted_quantity = int(cursor.fetchone()[0])
                 # Generate a buyer_id that is not the same as the seller_id
                 buyer_ids = list(range(1, num_insertions + 1))
-                buyer_ids.remove(seller_id)
+                # buyer_ids.remove(seller_id)
                 buyer_id = random.choice(buyer_ids)
 
                 # Check if the quantity is valid based on the offer
@@ -181,24 +178,31 @@ def insertarEnTabla(tableName):
                     insertion_count += 1
     end_time = time.time()  # End time
     execution_time = end_time - start_time  # Calculate the execution time in seconds
-    print(f"Insertion into flea_mktv completed. {insertion_count} records inserted in {execution_time} seconds.")
+    print(f"Insertion into flea_mktv{table_name} completed. {insertion_count} records inserted in {execution_time} seconds.")
 
-while True:
-        # Establish a connection
-    connection = psycopg2.connect(
-        host='localhost',
-        port='5432',
-        user='postgres',
-        password='123',
-        database='postgres'
-    )
 
-    # Create a cursor to execute SQL statements
-    cursor = connection.cursor()
-    num_insertions = int(input("Enter the number of insertions: "))
-    insertarEnTabla(input('Inserte el nombre de la tabla: '))
+# Establish a connection
+connection = psycopg2.connect(
+    host='181.126.207.103',
+    port='5432',
+    user='postgres',
+    password='123',
+    database='postgres'
+)
 
-    # Commit the changes and close the cursor and connection
-    connection.commit()
-    cursor.close()
-    connection.close()
+# Create a cursor to execute SQL statements
+cursor = connection.cursor()
+
+insertarEnTabla('category',10)
+insertarEnTabla('tax',10)
+insertarEnTabla('player',1000)
+insertarEnTabla('product',100)
+insertarEnTabla('item',1000)
+insertarEnTabla('offer',1000)
+insertarEnTabla('transaction',500)
+
+
+# Commit the changes and close the cursor and connection
+connection.commit()
+cursor.close()
+connection.close()
