@@ -3,8 +3,16 @@ import random
 from psycopg2 import sql
 from datetime import datetime
 import time
+import sys
+def insertarEnTabla(tableName,num_insertions):
+    cursor.execute("SELECT tax_id FROM flea_mktv.tax;")
+    tax_ids = [row[0] for row in cursor.fetchall()]
 
-def insertarEnTabla(tableName):
+    cursor.execute("SELECT product_id FROM flea_mktv.product;")
+    product_ids = [row[0] for row in cursor.fetchall()]
+    
+    cursor.execute("SELECT player_id FROM flea_mktv.player;")
+    player_ids = [row[0] for row in cursor.fetchall()]
     # Generate and execute the SQL insert statements for the "player," "item," "transaction," and "offer" tables
     table_queries = {
     'category': "INSERT INTO flea_mktv.category (category_name, description) VALUES (%s, %s);",
@@ -15,9 +23,6 @@ def insertarEnTabla(tableName):
     'offer': "INSERT INTO flea_mktv.offer (seller_id, tax_id, offer_status, product_id, quantity) VALUES (%s, %s, %s, %s, %s);",
     'transaction': """INSERT INTO flea_mktv."transaction" (buyer_id, offer_id, quantity, "time") VALUES (%s, %s, %s, %s);"""
     }
-
-
-    used_item_ids = []  # List to keep track of used item_ids
     start_time = time.time()  # Start time
     insertion_count = 0
     table_queries_iterator = iter(table_queries)
@@ -95,14 +100,14 @@ def insertarEnTabla(tableName):
 
             elif table_name == 'offer': 
                 # Retrieve existing player_ids, tax_ids, and product_ids
-                cursor.execute("SELECT player_id FROM flea_mktv.player;")
-                player_ids = [row[0] for row in cursor.fetchall()]
+                # cursor.execute("SELECT player_id FROM flea_mktv.player;")
+                # player_ids = [row[0] for row in cursor.fetchall()]
 
-                cursor.execute("SELECT tax_id FROM flea_mktv.tax;")
-                tax_ids = [row[0] for row in cursor.fetchall()]
+                # cursor.execute("SELECT tax_id FROM flea_mktv.tax;")
+                # tax_ids = [row[0] for row in cursor.fetchall()]
 
-                cursor.execute("SELECT product_id FROM flea_mktv.product;")
-                product_ids = [row[0] for row in cursor.fetchall()]
+                # cursor.execute("SELECT product_id FROM flea_mktv.product;")
+                # product_ids = [row[0] for row in cursor.fetchall()]
                 # Generate offer data
                 seller_id = random.choice(player_ids)
                 tax_id = random.choice(tax_ids)
@@ -181,24 +186,38 @@ def insertarEnTabla(tableName):
                     insertion_count += 1
     end_time = time.time()  # End time
     execution_time = end_time - start_time  # Calculate the execution time in seconds
-    print(f"Insertion into flea_mktv completed. {insertion_count} records inserted in {execution_time} seconds.")
+    print(f"Insertion into flea_mktv{table_name} completed. {insertion_count} records inserted in {execution_time} seconds.")
 
-while True:
-        # Establish a connection
+
+# Establish a connection
+
+import os
+for i in range(10):
+    pid = os.fork()
     connection = psycopg2.connect(
-        host='localhost',
+        host='181.126.207.103',
         port='5432',
         user='postgres',
         password='123',
         database='postgres'
     )
+    
+# Create a cursor to execute SQL statements
+cursor = connection.cursor()
+if pid ==0:
+    insertarEnTabla('offer',12500)
+else:
+    insertarEnTabla('offer',12488)
+# insertarEnTabla('category',10)
+# insertarEnTabla('tax',10)
 
-    # Create a cursor to execute SQL statements
-    cursor = connection.cursor()
-    num_insertions = int(input("Enter the number of insertions: "))
-    insertarEnTabla(input('Inserte el nombre de la tabla: '))
+# insertarEnTabla('product',100)
+# insertarEnTabla('item',500000)
+# insertarEnTabla('offer',300000)
 
-    # Commit the changes and close the cursor and connection
-    connection.commit()
-    cursor.close()
-    connection.close()
+
+
+# Commit the changes and close the cursor and connection
+connection.commit()
+cursor.close()
+connection.close()
